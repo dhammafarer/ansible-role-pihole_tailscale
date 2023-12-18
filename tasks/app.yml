@@ -16,6 +16,7 @@
     name: "{{ pihole_pod_name }}"
     state: created
     recreate: true
+    publish: "{{ pihole_publish }}"
 
 - name: Ensure container is created for {{ pihole_container_name }}.
   containers.podman.podman_container:

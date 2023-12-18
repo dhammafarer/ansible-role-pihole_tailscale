@@ -15,5 +15,10 @@ pihole_tailscale_image_tag: latest
 pihole_env_tz: "Asia/Taipei"
 pihole_env_webpassword: secret
 
+pihole_http_port: "8080"
+
+pihole_publish:
+  - "{{ pihole_http_port }}:80/tcp"
+
 pihole_tailscale_authkey: ""
 pihole_tailscale_hostname: ""
