@@ -1,0 +1,4 @@
+---
+pihole_volumes_dir: /srv/pihole
+pihole_user: vagrant
+pihole_tailscale_hostname: "dns"

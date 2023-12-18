@@ -1,0 +1,19 @@
+---
+pihole_user: "{{ ansible_user }}"
+
+pihole_pod_name: pihole
+pihole_container_name: pihole-container
+
+pihole_volumes_dir: /srv/pihole
+
+pihole_image_name: docker.io/pihole/pihole
+pihole_image_tag: latest
+
+pihole_tailscale_image_name: docker.io/tailscale/tailscale
+pihole_tailscale_image_tag: latest
+
+pihole_env_tz: "Asia/Taipei"
+pihole_env_webpassword: secret
+
+pihole_tailscale_authkey: ""
+pihole_tailscale_hostname: ""

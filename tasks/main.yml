@@ -1,0 +1,20 @@
+---
+- name: Check if user has lingering enabled.
+  ansible.builtin.command:
+    cmd: "ls /var/lib/systemd/linger"
+  changed_when: false
+  register: linger
+
+- name: Enable linger for user {{ pihole_user }}
+  become: true
+  ansible.builtin.command:
+    cmd: "loginctl enable-linger {{ pihole_user }}"
+  changed_when: true
+  when: "pihole_user not in linger.stdout"
+
+- name: Run tasks under user {{ pihole_user }}.
+  become: true
+  become_user: "{{ pihole_user }}"
+  block:
+    - name: Include app tasks.
+      ansible.builtin.include_tasks: app.yml

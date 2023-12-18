@@ -1,0 +1,22 @@
+---
+dependencies: []
+
+collections:
+  - ansible.posix
+  - community.general
+  - containers.podman
+
+galaxy_info:
+  role_name: pihole_tailscale
+  author: palekiwi
+  description: Install pihole with tailscale sidecar in a rootless podman.
+  license: "license (BSD, MIT)"
+  min_ansible_version: "2.10"
+  platforms:
+    - name: EL
+      versions:
+        - "9"
+  galaxy_tags:
+    - pihole
+    - tailscale
+    - podman

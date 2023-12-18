@@ -1,0 +1,64 @@
+---
+- name: Ensure volume directories exist.
+  ansible.builtin.file:
+    path: "{{ pihole_volumes_dir }}/{{ item.dir }}"
+    owner: "{{ pihole_user }}"
+    group: "{{ pihole_user }}"
+    mode: "{{ item.mode }}"
+    state: directory
+  loop:
+    - { dir: "etc-pihole", mode: "770"}
+    - { dir: "etc-dnsmasq.d", mode: "770"}
+    - { dir: "tailscale_state", mode: "770"}
+
+- name: Ensure a pod exists for {{ pihole_pod_name }}.
+  containers.podman.podman_pod:
+    name: "{{ pihole_pod_name }}"
+    state: created
+    recreate: true
+
+- name: Ensure container is created for {{ pihole_container_name }}.
+  containers.podman.podman_container:
+    pod: "{{ pihole_pod_name }}"
+    name: "{{ pihole_container_name }}"
+    image: "{{ pihole_image_name }}:{{ pihole_image_tag }}"
+    state: created
+    restart_policy: always
+    volumes:
+      - "{{ pihole_volumes_dir }}/etc-pihole:/etc/pihole:z"
+      - "{{ pihole_volumes_dir }}/etc-dnsmasq.d:/etc/dnsmasq.d:z"
+    env:
+      PIHOLE_UID: 0
+      TZ: "{{ pihole_env_tz }}"
+      WEBPASSWORD: "{{ pihole_env_webpassword }}"
+
+- name: Ensure tailscale container exists.
+  containers.podman.podman_container:
+    pod: "{{ pihole_pod_name }}"
+    name: "{{ pihole_pod_name }}-tailscale"
+    image: "{{ pihole_tailscale_image_name }}:{{ pihole_tailscale_image_tag }}"
+    state: created
+    recreate: true
+    restart_policy: always
+    volumes:
+      - "{{ pihole_volumes_dir }}/tailscale_state:/state:Z"
+    env:
+      TS_AUTHKEY: "{{ pihole_tailscale_authkey }}"
+      TS_AUTH_ONCE: true
+      TS_HOSTNAME: "{{ pihole_tailscale_hostname }}"
+      TS_STATE_DIR: /state
+      TS_ACCEPT_DNS: false
+
+- name: Generate systemd units for {{ pihole_pod_name }}.
+  containers.podman.podman_generate_systemd:
+    name: "{{ pihole_pod_name }}"
+    dest: "/home/{{ pihole_user }}/.config/systemd/user/"
+    restart_policy: on-failure
+    force: true
+
+- name: Ensure systemd units are started and enabled for {{ pihole_pod_name }}.
+  ansible.builtin.systemd:
+    scope: user
+    daemon_reload: true
+    name: "pod-{{ pihole_pod_name }}"
+    state: started

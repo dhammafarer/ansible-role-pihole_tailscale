@@ -1,0 +1,24 @@
+---
+- name: Converge
+  hosts: all
+
+  vars_files:
+    - vars/main.yml
+    - vars/key.yml
+
+  tasks:
+    - name: Ensure required volume dirs are created.
+      become: true
+      ansible.builtin.file:
+        path: "{{ item }}"
+        mode: "0755"
+        owner: "{{ pihole_user }}"
+        group: "{{ pihole_user }}"
+        state: directory
+        setype: container_file_t
+      loop:
+        - "{{ pihole_volumes_dir }}"
+
+    - name: "Include palekiwi.pihole_tailscale"
+      ansible.builtin.include_role:
+        name: "palekiwi.pihole_tailscale"
